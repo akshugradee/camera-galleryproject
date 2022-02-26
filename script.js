@@ -7,7 +7,7 @@ let capturebtn=document.querySelector(".capture-btn");
 let recordflag=false;
 let chunks=[];  //media data in chunks \
 
-let transparentcolor;
+let transparentcolor="transparent";
 
 let recorder;
 let constraints={
@@ -34,11 +34,23 @@ navigator.mediaDevices.getUserMedia(constraints)
         let blob = new Blob(chunks,{type:"video/mp4"});
 
         let videourl=URL.createObjectURL(blob);
-        let a =document.createElement("a");
+        
 
-        a.href=videourl;
-        a.download="stream.mp4";
-        a.click();
+        if(db){
+            let videoid=shortid();
+            let dbTransaction=db.transaction("video","readwrite");
+            let videostore=dbTransaction.objectStore("video");
+            let videoentry={
+                id: `vid-${videoid}`,
+                blobData: blob
+            }
+            videostore.add(videoentry);
+        }
+        // let a =document.createElement("a");
+
+        // a.href=videourl;
+        // a.download="stream.mp4";
+        // a.click();
 
 
     })
@@ -65,6 +77,7 @@ recordbtncont.addEventListener('click',(e)=>{
     }
 })
 capturebtncont.addEventListener("click",(e)=>{
+    capturebtn.classList.add("scale-capture");
     // using canvas api- drawing graphics add 
 
     let canvas=document.createElement('canvas');
@@ -80,12 +93,27 @@ capturebtncont.addEventListener("click",(e)=>{
     // image url
 
     let imageurl=canvas.toDataURL();
-    // download image
-    let a=document.createElement("a");
-    a.href=imageurl;
-    a.download="image.jpg";
-    a.click();
 
+
+    if(db){
+        let imageid=shortid();
+        let dbTransaction=db.transaction("image","readwrite");
+        let imagestore=dbTransaction.objectStore("image");
+        let imageentry={
+            id: `img-${imageid}`,
+            url: imageurl
+        }
+        imagestore.add(imageentry);
+    }
+    // download image
+    // let a=document.createElement("a");
+    // a.href=imageurl;
+    // a.download="image.jpg";
+    // a.click();
+
+setTimeout(()=>{
+    capturebtn.classList.remove("scale-capture");
+},500)
 })
 
 
